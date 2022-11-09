@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  app:
+    container_name: conwaysgame
+    image: conwaysgame
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    expose:
+      - 80
+    networks:
+      - nginx_proxy_default
+
+networks:
+  nginx_proxy_default:
+    external: true
