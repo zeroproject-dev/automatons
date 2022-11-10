@@ -3,8 +3,8 @@ import './style.css';
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-const rows = 50;
-const cols = 50;
+const rows = canvas.width / 10;
+const cols = canvas.height / 10;
 
 type GameState = Array<Array<number>>;
 

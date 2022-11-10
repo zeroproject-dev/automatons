@@ -27,7 +27,7 @@ a:hover {
 body {
 	margin: 0;
 	display: grid;
-	place-items: center;
+	grid-template-rows: auto 1fr auto;
 	min-width: 320px;
 	min-height: 100vh;
 }
@@ -39,4 +39,15 @@ h1 {
 
 canvas {
 	border: 1px solid;
+	width: 90%;
+	max-width: 900px;
+}
+
+.title {
+	text-align: center;
+}
+
+.container {
+	display: grid;
+	place-items: center;
 }
