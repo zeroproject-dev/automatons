@@ -5,8 +5,8 @@ const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
 const $startBtn = document.getElementById('start') as HTMLButtonElement;
 const $stopBtn = document.getElementById('stop') as HTMLButtonElement;
-const $resetBtn = document.getElementById('reset') as HTMLButtonElement;
-const $nextBtn = document.getElementById('next') as HTMLButtonElement;
+// const $resetBtn = document.getElementById('reset') as HTMLButtonElement;
+// const $nextBtn = document.getElementById('next') as HTMLButtonElement;
 
 const rows = canvas.width / 10;
 const cols = canvas.height / 10;
