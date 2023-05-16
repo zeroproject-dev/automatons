@@ -3,6 +3,11 @@ import './style.css';
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
+const $startBtn = document.getElementById('start') as HTMLButtonElement;
+const $stopBtn = document.getElementById('stop') as HTMLButtonElement;
+const $resetBtn = document.getElementById('reset') as HTMLButtonElement;
+const $nextBtn = document.getElementById('next') as HTMLButtonElement;
+
 const rows = canvas.width / 10;
 const cols = canvas.height / 10;
 
@@ -26,7 +31,7 @@ const drawGrid = (
 	}
 };
 
-const createInitalState = (rows: number, cols: number) => {
+const createInitialState = (rows: number, cols: number) => {
 	const arr = new Array(rows);
 	for (let i = 0; i < arr.length; i++) {
 		if (i == 0 || i == arr.length - 1) {
@@ -46,7 +51,7 @@ const createInitalState = (rows: number, cols: number) => {
 	return arr;
 };
 
-let gameState = createInitalState(rows, cols);
+let gameState = createInitialState(rows, cols);
 drawGrid(gameState);
 
 const update = (gameState: GameState): GameState => {
@@ -80,13 +85,26 @@ const update = (gameState: GameState): GameState => {
 };
 
 const loop = () => {
+	if (!isRunning) return;
 	gameState = update(gameState);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawGrid(gameState);
 
-	setTimeout(() => {
+	return setTimeout(() => {
 		requestAnimationFrame(loop);
 	}, 100);
 };
 
-window.requestAnimationFrame(loop);
+let idLoop: number;
+let isRunning = false;
+
+$startBtn.addEventListener('click', () => {
+	if (isRunning) return;
+	idLoop = window.requestAnimationFrame(loop);
+	isRunning = true;
+});
+
+$stopBtn.addEventListener('click', () => {
+	window.cancelAnimationFrame(idLoop);
+	isRunning = false;
+});

@@ -1,4 +1,4 @@
-name: Build and Deploy Conway's Game
+name: Build and Deploy Automatons
 
 on:
   push:
@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: deploy
     steps:
-      - name: deploy game
+      - name: deploy
         uses: fifsky/ssh-action@master
         with:
           args: '-tt'
           host: ${{ secrets.HOST }}
           user: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          command: ~/deploy.sh conwaysGame-ts
+          command: ~/deploy.sh automatons
