@@ -9,10 +9,17 @@ const $resetBtn = document.getElementById('reset') as HTMLButtonElement;
 const $randomBtn = document.getElementById('random') as HTMLButtonElement;
 const $nextBtn = document.getElementById('next') as HTMLButtonElement;
 
+const $automatonsSelect = document.getElementById(
+	'automatons'
+) as HTMLSelectElement;
+
 const rows = canvas.width / 10;
 const cols = canvas.height / 10;
 
 type GameState = Array<Array<number>>;
+
+const COLOR_STATES = ['#242424', '#ffffff', '#33ff33'];
+let totalStates = 2;
 
 const drawGrid = (
 	gameState: GameState,
@@ -26,7 +33,8 @@ const drawGrid = (
 		for (let j = 0; j < cols; j++) {
 			const x = i * cellSize;
 			const y = j * cellSize;
-			if (gameState[i][j] === 1) ctx.fillRect(x, y, cellSize, cellSize);
+			ctx.fillStyle = COLOR_STATES[gameState[i][j]];
+			if (gameState[i][j] !== 0) ctx.fillRect(x, y, cellSize, cellSize);
 			ctx.strokeRect(x, y, cellSize, cellSize);
 		}
 	}
@@ -57,20 +65,47 @@ const createBlankState = (rows: number, cols: number) => {
 let gameState: GameState = createBlankState(rows, cols);
 drawGrid(gameState);
 
-const getNeighborsCells = (gameState: GameState, x: number, y: number) => {
-	let num = 0;
+const getNeighborsCells = (
+	gameState: GameState,
+	x: number,
+	y: number,
+	Ncount: number
+): Array<number> => {
+	let num = new Array<number>(Ncount);
+	num.fill(0);
+
 	for (let k = -1; k < 2; k++) {
 		for (let l = -1; l < 2; l++) {
 			try {
-				num += gameState[x + k][y + l];
+				if (k === 0 && l === 0) continue;
+				num[gameState[x + k][y + l]]++;
 			} catch {
-				num += 0;
+				num[0]++;
 			}
 		}
 	}
-	num -= gameState[x][y];
+
 	return num;
 };
+
+const GoL = (cell: number, neighbors: Array<number>) => {
+	if (cell === 1 && (neighbors[1] === 2 || neighbors[1] === 3)) return 1;
+	if (cell === 0 && neighbors[1] === 3) return 1;
+	return 0;
+};
+
+const Seeds = (_cell: number, neighbors: Array<number>) => {
+	if (neighbors[1] == 2) return 1;
+	return 0;
+};
+
+const BrainsBrain = (cell: number, neighbors: Array<number>) => {
+	if (cell === 0 && neighbors[1] === 2) return 1;
+	if (cell === 1) return 2;
+	return 0;
+};
+
+let currentGame: Function = GoL;
 
 const getNextState = (gameState: GameState): GameState => {
 	const newState: GameState = [...gameState];
@@ -78,16 +113,8 @@ const getNextState = (gameState: GameState): GameState => {
 	for (let i = 0; i < rows; i++) {
 		newState[i] = [];
 		for (let j = 0; j < cols; j++) {
-			const cell = gameState[i][j];
-			let numNeighbors = getNeighborsCells(gameState, i, j);
-
-			if (cell === 0 && numNeighbors === 3) {
-				newState[i][j] = 1;
-			} else if (cell === 1 && (numNeighbors < 2 || numNeighbors > 3)) {
-				newState[i][j] = 0;
-			} else {
-				newState[i][j] = cell;
-			}
+			let numNeighbors = getNeighborsCells(gameState, i, j, totalStates);
+			newState[i][j] = currentGame(gameState[i][j], numNeighbors);
 		}
 	}
 
@@ -158,6 +185,23 @@ $randomBtn.addEventListener('click', () => {
 	gameState = createRandomState(rows, cols);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawGrid(gameState);
+});
+
+$automatonsSelect.addEventListener('change', () => {
+	switch ($automatonsSelect.value) {
+		case 'gol':
+			totalStates = 2;
+			currentGame = GoL;
+			break;
+		case 'seeds':
+			totalStates = 2;
+			currentGame = Seeds;
+			break;
+		case 'bb':
+			totalStates = 3;
+			currentGame = BrainsBrain;
+			break;
+	}
 });
 
 function startAnimation() {
