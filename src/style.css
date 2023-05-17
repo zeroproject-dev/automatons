@@ -41,6 +41,7 @@ canvas {
 	border: 1px solid;
 	width: 90%;
 	max-width: 900px;
+	touch-action: none;
 }
 
 .title {
