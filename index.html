@@ -11,20 +11,21 @@
 <body>
   <div class="container" style="display: flex;margin:auto;">
     <button id="start">Start</button>
-    <button id="stop">stop</button>
     <button id="reset">reset</button>
     <button id="random">random</button>
     <button id="next">next</button>
+    <input type="number" id="state" value="1">
     <select id="automatons">
       <optgroup label="2D Automatons" title="2D Automatons">
         <option value="gol" selected>Game of Life</option>
         <option value="seeds">Seeds</option>
         <option value="bb">Brain's Brain</option>
+        <option value="wire">WireWorld</option>
       </optgroup>
     </select>
   </div>
   <div class="container">
-    <canvas width="500" height="500" id="canvas"></canvas>
+    <canvas width="300" height="300" id="canvas"></canvas>
   </div>
   <div class="controlls">
   </div>

@@ -1,13 +1,15 @@
+import { BrainsBrain, GoL, Seeds, WireWorld } from './automatons';
+import { BoardState, IState } from './automatons/base';
 import './style.css';
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
 const $startBtn = document.getElementById('start') as HTMLButtonElement;
-const $stopBtn = document.getElementById('stop') as HTMLButtonElement;
 const $resetBtn = document.getElementById('reset') as HTMLButtonElement;
 const $randomBtn = document.getElementById('random') as HTMLButtonElement;
 const $nextBtn = document.getElementById('next') as HTMLButtonElement;
+const $stateInput = document.getElementById('state') as HTMLInputElement;
 
 const $automatonsSelect = document.getElementById(
 	'automatons'
@@ -16,24 +18,23 @@ const $automatonsSelect = document.getElementById(
 const rows = canvas.width / 10;
 const cols = canvas.height / 10;
 
-type GameState = Array<Array<number>>;
-
-const COLOR_STATES = ['#242424', '#ffffff', '#33ff33'];
-let totalStates = 2;
+let currentGame: IState = new GoL();
+let currentState = 1;
 
 const drawGrid = (
-	gameState: GameState,
+	gameState: BoardState,
 	cellSize: number = 10,
 	color = '#3a3a3a',
 	fill = '#ffffff'
 ) => {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.strokeStyle = color;
 	ctx.fillStyle = fill;
 	for (let i = 0; i < rows; i++) {
 		for (let j = 0; j < cols; j++) {
 			const x = i * cellSize;
 			const y = j * cellSize;
-			ctx.fillStyle = COLOR_STATES[gameState[i][j]];
+			ctx.fillStyle = currentGame.colors[gameState[i][j]];
 			if (gameState[i][j] !== 0) ctx.fillRect(x, y, cellSize, cellSize);
 			ctx.strokeRect(x, y, cellSize, cellSize);
 		}
@@ -62,16 +63,15 @@ const createBlankState = (rows: number, cols: number) => {
 	return arr;
 };
 
-let gameState: GameState = createBlankState(rows, cols);
+let gameState: BoardState = createBlankState(rows, cols);
 drawGrid(gameState);
 
 const getNeighborsCells = (
-	gameState: GameState,
+	gameState: BoardState,
 	x: number,
-	y: number,
-	Ncount: number
+	y: number
 ): Array<number> => {
-	let num = new Array<number>(Ncount);
+	let num = new Array<number>(currentGame.totalState);
 	num.fill(0);
 
 	for (let k = -1; k < 2; k++) {
@@ -88,33 +88,14 @@ const getNeighborsCells = (
 	return num;
 };
 
-const GoL = (cell: number, neighbors: Array<number>) => {
-	if (cell === 1 && (neighbors[1] === 2 || neighbors[1] === 3)) return 1;
-	if (cell === 0 && neighbors[1] === 3) return 1;
-	return 0;
-};
-
-const Seeds = (_cell: number, neighbors: Array<number>) => {
-	if (neighbors[1] == 2) return 1;
-	return 0;
-};
-
-const BrainsBrain = (cell: number, neighbors: Array<number>) => {
-	if (cell === 0 && neighbors[1] === 2) return 1;
-	if (cell === 1) return 2;
-	return 0;
-};
-
-let currentGame: Function = GoL;
-
-const getNextState = (gameState: GameState): GameState => {
-	const newState: GameState = [...gameState];
+const getNextState = (gameState: BoardState): BoardState => {
+	const newState: BoardState = [...gameState];
 
 	for (let i = 0; i < rows; i++) {
 		newState[i] = [];
 		for (let j = 0; j < cols; j++) {
-			let numNeighbors = getNeighborsCells(gameState, i, j, totalStates);
-			newState[i][j] = currentGame(gameState[i][j], numNeighbors);
+			let numNeighbors = getNeighborsCells(gameState, i, j);
+			newState[i][j] = currentGame.getCellState(gameState[i][j], numNeighbors);
 		}
 	}
 
@@ -137,80 +118,85 @@ let isRunning = false;
 
 let isDrawing = false;
 
-function fillClick(gameState: GameState, x: number, y: number) {
+function fillClick(gameState: BoardState, x: number, y: number) {
 	const height = canvas.clientHeight;
 	const width = canvas.clientWidth;
 
 	const rX = Math.floor((x / width) * gameState[0].length);
 	const rY = Math.floor((y / height) * gameState.length);
 
-	gameState[rX][rY] = 1;
+	gameState[rX][rY] = currentState;
 	drawGrid(gameState);
 }
 
-canvas.addEventListener('mousedown', (e) => {
+canvas.addEventListener('pointerdown', (e) => {
 	isDrawing = true;
-	isRunning = false;
+	stopAnimation();
 	fillClick(gameState, e.offsetX, e.offsetY);
 });
 
-canvas.addEventListener('mousemove', (e) => {
+canvas.addEventListener('pointermove', (e) => {
 	if (!isDrawing) return;
 	fillClick(gameState, e.offsetX, e.offsetY);
 });
 
-document.addEventListener('mouseup', () => {
+document.addEventListener('pointerup', () => {
 	isDrawing = false;
 });
 
-$startBtn.addEventListener('click', startAnimation);
-
-$stopBtn.addEventListener('click', stopAnimation);
+$startBtn.addEventListener('click', () => {
+	if (!isRunning) startAnimation();
+	else stopAnimation();
+});
 
 $nextBtn.addEventListener('click', () => {
 	gameState = getNextState(gameState);
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawGrid(gameState);
 });
 
 $resetBtn.addEventListener('click', () => {
 	stopAnimation();
 	gameState = createBlankState(rows, cols);
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawGrid(gameState);
 });
 
 $randomBtn.addEventListener('click', () => {
 	stopAnimation();
 	gameState = createRandomState(rows, cols);
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawGrid(gameState);
 });
 
 $automatonsSelect.addEventListener('change', () => {
 	switch ($automatonsSelect.value) {
 		case 'gol':
-			totalStates = 2;
-			currentGame = GoL;
+			currentGame = new GoL();
 			break;
 		case 'seeds':
-			totalStates = 2;
-			currentGame = Seeds;
+			currentGame = new Seeds();
 			break;
 		case 'bb':
-			totalStates = 3;
-			currentGame = BrainsBrain;
+			currentGame = new BrainsBrain();
+			break;
+
+		case 'wire':
+			currentGame = new WireWorld();
 			break;
 	}
+});
+
+$stateInput.addEventListener('change', () => {
+	currentState = Number($stateInput.value);
 });
 
 function startAnimation() {
 	if (isRunning) return;
 	idLoop = window.requestAnimationFrame(loop);
 	isRunning = true;
+	$startBtn.textContent = 'Stop';
 }
 
 function stopAnimation() {
 	window.cancelAnimationFrame(idLoop);
 	isRunning = false;
+	$startBtn.textContent = 'Start';
 }
