@@ -14,8 +14,8 @@ jobs:
       - name: deploy
         uses: fifsky/ssh-action@master
         with:
-          args: '-tt'
+          args: "-tt"
           host: ${{ secrets.HOST }}
           user: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          command: ~/deploy.sh automatons
+          command: ~/front-project-deploy.sh automatons
